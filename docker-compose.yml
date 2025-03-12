@@ -1,0 +1,67 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-saas-template
+    container_name: ai-saas-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - ai-saas-network
+    depends_on:
+      - db
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: ai-saas-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - ai-saas-network
+    depends_on:
+      - app
+
+  db:
+    image: postgres:15
+    container_name: ai-saas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ai_saas}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - ai-saas-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ai-saas-network
+
+  redis:
+    image: redis:alpine
+    container_name: ai-saas-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - ai-saas-network
+    volumes:
+      - ai-saas-redis-data:/data
+
+networks:
+  ai-saas-network:
+    driver: bridge
+
+volumes:
+  ai-saas-db-data:
+    driver: local
+  ai-saas-redis-data:
+    driver: local 

@@ -10,11 +10,11 @@
 ## 1. プロジェクトセットアップ
 
 ### 1.1 開発環境構築
-- [ ] Laravelプロジェクト作成
-- [ ] Vue.js + TypeScript 設定
-- [ ] Docker開発環境構築
-- [ ] .env ファイル設定
-- [ ] GitHubリポジトリ設定
+- [x] Laravelプロジェクト作成
+- [x] Vue.js + TypeScript 設定
+- [x] Docker開発環境構築
+- [x] .env ファイル設定
+- [x] GitHubリポジトリ設定
 - [ ] CIパイプライン構築（GitHub Actions）
 - [ ] コーディング規約の設定（ESLint, PHP-CS-Fixer）
 
