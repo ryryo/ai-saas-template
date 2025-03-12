@@ -1,0 +1,395 @@
+# データベース設計
+
+本ドキュメントでは、AI-SaaS テンプレートのデータベース設計について説明します。マルチテナント構造を採用し、PostgreSQLを使用して実装します。
+
+## 1. ER図
+
+```mermaid
+erDiagram
+    tenants ||--o{ users : "所属"
+    tenants ||--o{ tracking_tags : "所有"
+    tenants ||--o{ tracking_events : "所有"
+    users ||--o{ tracking_tags : "作成"
+    users ||--o{ user_settings : "持つ"
+    tracking_tags ||--o{ tracking_events : "収集"
+
+    tenants {
+        bigint id PK
+        varchar name "テナント名"
+        varchar domain "ドメイン"
+        varchar plan_type "プランタイプ"
+        datetime created_at "作成日時"
+        datetime updated_at "更新日時"
+        datetime deleted_at "削除日時(soft delete)" 
+    }
+
+    users {
+        bigint id PK
+        bigint tenant_id FK "テナントID"
+        varchar name "ユーザー名"
+        varchar email "メールアドレス" 
+        varchar password "パスワード(ハッシュ)"
+        enum role "ロール(super_admin, tenant_admin, user)"
+        boolean is_active "アクティブフラグ"
+        datetime last_login_at "最終ログイン日時"
+        datetime created_at "作成日時"
+        datetime updated_at "更新日時"
+        datetime deleted_at "削除日時"
+    }
+
+    tracking_tags {
+        bigint id PK
+        bigint tenant_id FK "テナントID"
+        bigint user_id FK "作成者ID"
+        varchar name "タグ名"
+        varchar tag_key "タグキー(UUID)"
+        text description "説明"
+        boolean is_active "アクティブフラグ"
+        datetime created_at "作成日時"
+        datetime updated_at "更新日時"
+    }
+
+    tracking_events {
+        bigint id PK
+        bigint tenant_id FK "テナントID"
+        bigint tag_id FK "タグID"
+        varchar event_type "イベントタイプ"
+        varchar page_url "ページURL"
+        varchar element_id "要素ID"
+        varchar element_class "要素クラス"
+        jsonb user_agent "ユーザーエージェント情報"
+        jsonb event_data "イベントデータ"
+        varchar client_ip "クライアントIP"
+        datetime event_time "イベント発生時間"
+        datetime created_at "作成日時"
+    }
+
+    user_settings {
+        bigint id PK
+        bigint user_id FK "ユーザーID"
+        varchar theme "テーマ設定"
+        jsonb notification_preferences "通知設定"
+        datetime created_at "作成日時"
+        datetime updated_at "更新日時"
+    }
+
+    system_settings {
+        bigint id PK
+        varchar key "設定キー"
+        jsonb value "設定値"
+        text description "説明"
+        boolean is_tenant_configurable "テナント設定可能フラグ"
+        datetime created_at "作成日時"
+        datetime updated_at "更新日時"
+    }
+
+```
+
+## 2. テーブル定義書
+
+### 2.1 tenants（テナント）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| name | varchar(255) | No | - | テナント名 |
+| domain | varchar(255) | Yes | NULL | ドメイン名 |
+| plan_type | varchar(50) | No | 'free' | プランタイプ（free, basic, premium） |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
+| deleted_at | timestamp | Yes | NULL | 削除日時（論理削除用） |
+
+### 2.2 users（ユーザー）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| tenant_id | bigint | No | - | 外部キー（tenants.id） |
+| name | varchar(255) | No | - | ユーザー名 |
+| email | varchar(255) | No | - | メールアドレス（ユニーク） |
+| password | varchar(255) | No | - | パスワード（ハッシュ化） |
+| role | enum | No | 'user' | ロール（super_admin, tenant_admin, user） |
+| is_active | boolean | No | true | アクティブフラグ |
+| last_login_at | timestamp | Yes | NULL | 最終ログイン日時 |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
+| deleted_at | timestamp | Yes | NULL | 削除日時（論理削除用） |
+
+### 2.3 tracking_tags（トラッキングタグ）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| tenant_id | bigint | No | - | 外部キー（tenants.id） |
+| user_id | bigint | No | - | 外部キー（users.id）、作成者 |
+| name | varchar(255) | No | - | タグ名 |
+| tag_key | varchar(36) | No | - | タグキー（UUID形式） |
+| description | text | Yes | NULL | 説明 |
+| is_active | boolean | No | true | アクティブフラグ |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
+
+### 2.4 tracking_events（トラッキングイベント）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| tenant_id | bigint | No | - | 外部キー（tenants.id） |
+| tag_id | bigint | No | - | 外部キー（tracking_tags.id） |
+| event_type | varchar(50) | No | - | イベントタイプ（click, view, submit等） |
+| page_url | varchar(2048) | No | - | ページURL |
+| element_id | varchar(255) | Yes | NULL | 要素ID |
+| element_class | varchar(255) | Yes | NULL | 要素クラス |
+| user_agent | jsonb | Yes | NULL | ユーザーエージェント情報 |
+| event_data | jsonb | Yes | NULL | イベント固有データ |
+| client_ip | varchar(45) | Yes | NULL | クライアントIP |
+| event_time | timestamp | No | CURRENT_TIMESTAMP | イベント発生時間 |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+
+### 2.5 user_settings（ユーザー設定）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| user_id | bigint | No | - | 外部キー（users.id） |
+| theme | varchar(50) | Yes | 'light' | テーマ設定（light, dark, system） |
+| notification_preferences | jsonb | Yes | NULL | 通知設定 |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
+
+### 2.6 system_settings（システム設定）テーブル
+
+| カラム名 | データ型 | NULL | デフォルト | 説明 |
+|---------|---------|------|-----------|------|
+| id | bigint | No | auto_increment | 主キー |
+| key | varchar(255) | No | - | 設定キー（ユニーク） |
+| value | jsonb | No | '{}' | 設定値 |
+| description | text | Yes | NULL | 説明 |
+| is_tenant_configurable | boolean | No | false | テナントごとに設定可能か |
+| created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
+
+
+## 3. 主要テーブル定義例
+
+### 3.1 テナントテーブル
+
+```sql
+CREATE TABLE tenants (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    domain VARCHAR(255),
+    plan_type VARCHAR(50) NOT NULL DEFAULT 'free',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_tenants_domain ON tenants(domain);
+CREATE INDEX idx_tenants_deleted_at ON tenants(deleted_at);
+```
+
+### 3.2 ユーザーテーブル
+
+```sql
+CREATE TYPE user_role AS ENUM ('super_admin', 'tenant_admin', 'user');
+
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role user_role NOT NULL DEFAULT 'user',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    last_login_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT fk_users_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT users_email_unique UNIQUE(email)
+);
+
+CREATE INDEX idx_users_tenant_id ON users(tenant_id);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_deleted_at ON users(deleted_at);
+```
+
+### 3.3 トラッキングタグテーブル
+
+```sql
+CREATE TABLE tracking_tags (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    tag_key VARCHAR(36) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tracking_tags_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tracking_tags_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT tracking_tags_tag_key_unique UNIQUE(tag_key)
+);
+
+CREATE INDEX idx_tracking_tags_tenant_id ON tracking_tags(tenant_id);
+CREATE INDEX idx_tracking_tags_user_id ON tracking_tags(user_id);
+CREATE INDEX idx_tracking_tags_tag_key ON tracking_tags(tag_key);
+```
+
+### 3.4 トラッキングイベントテーブル
+
+```sql
+CREATE TABLE tracking_events (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    tag_id BIGINT NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    page_url VARCHAR(2048) NOT NULL,
+    element_id VARCHAR(255),
+    element_class VARCHAR(255),
+    user_agent JSONB,
+    event_data JSONB,
+    client_ip VARCHAR(45),
+    event_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tracking_events_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tracking_events_tag FOREIGN KEY (tag_id) REFERENCES tracking_tags(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_tracking_events_tenant_id ON tracking_events(tenant_id);
+CREATE INDEX idx_tracking_events_tag_id ON tracking_events(tag_id);
+CREATE INDEX idx_tracking_events_event_type ON tracking_events(event_type);
+CREATE INDEX idx_tracking_events_event_time ON tracking_events(event_time);
+```
+
+### 3.5 ユーザー設定テーブル
+
+```sql
+CREATE TABLE user_settings (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    theme VARCHAR(50) DEFAULT 'light',
+    notification_preferences JSONB,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_settings_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_user_settings_user_id ON user_settings(user_id);
+```
+
+```
+
+## 4. マルチテナントクエリの実装例
+
+### 4.1 Laravelグローバルスコープの例
+
+```php
+<?php
+
+namespace App\Models\Scopes;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
+use Illuminate\Support\Facades\Auth;
+
+class TenantScope implements Scope
+{
+    /**
+     * すべてのクエリにテナントスコープを適用
+     */
+    public function apply(Builder $builder, Model $model)
+    {
+        if (Auth::check() && !app()->runningInConsole()) {
+            $user = Auth::user();
+            
+            // スーパー管理者の場合はスコープを適用しない
+            if ($user->role === 'super_admin') {
+                return;
+            }
+            
+            $builder->where($model->getTable() . '.tenant_id', $user->tenant_id);
+        }
+    }
+}
+```
+
+### 4.2 マイグレーションの例
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * マイグレーションの実行
+     */
+    public function up(): void
+    {
+        Schema::create('tracking_events', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tag_id')->constrained('tracking_tags')->onDelete('cascade');
+            $table->string('event_type', 50);
+            $table->string('page_url', 2048);
+            $table->string('element_id', 255)->nullable();
+            $table->string('element_class', 255)->nullable();
+            $table->jsonb('user_agent')->nullable();
+            $table->jsonb('event_data')->nullable();
+            $table->string('client_ip', 45)->nullable();
+            $table->timestamp('event_time')->useCurrent();
+            $table->timestamp('created_at')->useCurrent();
+            
+            $table->index('tenant_id');
+            $table->index('tag_id');
+            $table->index('event_type');
+            $table->index('event_time');
+        });
+    }
+
+    /**
+     * マイグレーションの取り消し
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('tracking_events');
+    }
+};
+```
+
+## 5. データベース最適化戦略
+
+### 5.1 インデックス戦略
+
+- 頻繁に検索・フィルタリングされるカラムにはインデックスを設定
+- 複合インデックスを効果的に活用（tenant_id + created_at など）
+- EXPLAIN ANALYZEを使用したクエリ分析と最適化
+
+### 5.2 パーティショニング
+
+トラッキングイベントテーブルなど、データ量が多くなるテーブルには以下のパーティション戦略を検討:
+
+```sql
+-- テーブルパーティショニングの例（時間ベース）
+CREATE TABLE tracking_events (
+    -- カラム定義
+) PARTITION BY RANGE (event_time);
+
+-- 月ごとのパーティション作成例
+CREATE TABLE tracking_events_y2023m01 PARTITION OF tracking_events
+    FOR VALUES FROM ('2023-01-01') TO ('2023-02-01');
+```
+
+### 5.3 キャッシュ戦略
+
+- 頻繁にアクセスされるデータはRedisにキャッシュ
+- テナント固有の設定やプリファレンスはキャッシュに保存
+- アプリケーションレベルでのキャッシュ管理 
