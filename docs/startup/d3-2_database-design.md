@@ -18,6 +18,8 @@ erDiagram
         varchar name "テナント名"
         varchar domain "ドメイン"
         varchar plan_type "プランタイプ"
+        varchar status "テナントステータス(active, suspended, trial等)"
+        jsonb settings "テナント固有の設定"
         datetime created_at "作成日時"
         datetime updated_at "更新日時"
         datetime deleted_at "削除日時(soft delete)" 
@@ -58,10 +60,11 @@ erDiagram
         varchar element_id "要素ID"
         varchar element_class "要素クラス"
         jsonb user_agent "ユーザーエージェント情報"
-        jsonb event_data "イベントデータ"
+        jsonb properties "イベントプロパティ"
         varchar client_ip "クライアントIP"
         datetime event_time "イベント発生時間"
         datetime created_at "作成日時"
+        datetime updated_at "更新日時"
     }
 
     user_settings {
@@ -95,6 +98,8 @@ erDiagram
 | name | varchar(255) | No | - | テナント名 |
 | domain | varchar(255) | Yes | NULL | ドメイン名 |
 | plan_type | varchar(50) | No | 'free' | プランタイプ（free, basic, premium） |
+| status | varchar(50) | No | 'active' | テナントステータス（active, suspended, trial） |
+| settings | jsonb | Yes | NULL | テナント固有の設定 |
 | created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
 | updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
 | deleted_at | timestamp | Yes | NULL | 削除日時（論理削除用） |
@@ -141,10 +146,11 @@ erDiagram
 | element_id | varchar(255) | Yes | NULL | 要素ID |
 | element_class | varchar(255) | Yes | NULL | 要素クラス |
 | user_agent | jsonb | Yes | NULL | ユーザーエージェント情報 |
-| event_data | jsonb | Yes | NULL | イベント固有データ |
+| properties | jsonb | Yes | NULL | イベントプロパティ |
 | client_ip | varchar(45) | Yes | NULL | クライアントIP |
 | event_time | timestamp | No | CURRENT_TIMESTAMP | イベント発生時間 |
 | created_at | timestamp | No | CURRENT_TIMESTAMP | 作成日時 |
+| updated_at | timestamp | No | CURRENT_TIMESTAMP | 更新日時 |
 
 ### 2.5 user_settings（ユーザー設定）テーブル
 
@@ -180,6 +186,8 @@ CREATE TABLE tenants (
     name VARCHAR(255) NOT NULL,
     domain VARCHAR(255),
     plan_type VARCHAR(50) NOT NULL DEFAULT 'free',
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    settings JSONB,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE
@@ -251,10 +259,11 @@ CREATE TABLE tracking_events (
     element_id VARCHAR(255),
     element_class VARCHAR(255),
     user_agent JSONB,
-    event_data JSONB,
+    properties JSONB,
     client_ip VARCHAR(45),
     event_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_tracking_events_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_tracking_events_tag FOREIGN KEY (tag_id) REFERENCES tracking_tags(id) ON DELETE CASCADE
 );
@@ -343,7 +352,7 @@ return new class extends Migration
             $table->string('element_id', 255)->nullable();
             $table->string('element_class', 255)->nullable();
             $table->jsonb('user_agent')->nullable();
-            $table->jsonb('event_data')->nullable();
+            $table->jsonb('properties')->nullable();
             $table->string('client_ip', 45)->nullable();
             $table->timestamp('event_time')->useCurrent();
             $table->timestamp('created_at')->useCurrent();
