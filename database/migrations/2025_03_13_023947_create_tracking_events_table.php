@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('element_id', 255)->nullable();
             $table->string('element_class', 255)->nullable();
             $table->jsonb('user_agent')->nullable();
-            $table->jsonb('event_data')->nullable();
+            $table->jsonb('properties')->nullable();
             $table->string('client_ip', 45)->nullable();
             $table->timestamp('event_time')->useCurrent();
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
 
         // インデックスを追加

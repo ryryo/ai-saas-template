@@ -13,7 +13,7 @@ class TrackingEvent extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'tenant_id',
@@ -23,7 +23,7 @@ class TrackingEvent extends Model
         'element_id',
         'element_class',
         'user_agent',
-        'event_data',
+        'properties',
         'client_ip',
         'event_time',
     ];
@@ -35,9 +35,8 @@ class TrackingEvent extends Model
      */
     protected $casts = [
         'user_agent' => 'array',
-        'event_data' => 'array',
+        'properties' => 'array',
         'event_time' => 'datetime',
-        'created_at' => 'datetime',
     ];
 
     /**
@@ -51,7 +50,7 @@ class TrackingEvent extends Model
     /**
      * Get the tracking tag that owns the tracking event.
      */
-    public function trackingTag(): BelongsTo
+    public function tag(): BelongsTo
     {
         return $this->belongsTo(TrackingTag::class, 'tag_id');
     }

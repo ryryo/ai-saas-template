@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -19,7 +20,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'tenant_id',
@@ -34,7 +35,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -65,19 +66,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the tracking tags for the user.
+     * Get the user's settings.
      */
-    public function trackingTags(): HasMany
+    public function setting(): HasOne
     {
-        return $this->hasMany(TrackingTag::class);
-    }
-
-    /**
-     * Get the user settings for the user.
-     */
-    public function settings(): HasMany
-    {
-        return $this->hasMany(UserSetting::class);
+        return $this->hasOne(UserSetting::class);
     }
 
     /**
