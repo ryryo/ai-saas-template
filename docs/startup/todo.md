@@ -46,14 +46,14 @@
 - [ ] システム設定初期データ作成
 
 ### 2.3 モデル
-- [ ] Tenant モデル作成
-- [ ] User モデル作成（認証機能含む）
-- [ ] TrackingTag モデル作成
-- [ ] TrackingEvent モデル作成
+- [x] Tenant モデル作成
+- [x] User モデル作成（認証機能含む）
+- [x] TrackingTag モデル作成
+- [x] TrackingEvent モデル作成
 - [ ] UserSetting モデル作成
 - [ ] SystemSetting モデル作成
 - [ ] AISuggestion モデル作成
-- [ ] モデル間リレーション設定
+- [x] モデル間リレーション設定
 
 ### 2.4 マルチテナント実装
 - [ ] TenantScope グローバルスコープ作成
