@@ -1,44 +1,82 @@
-# ディレクトリ構成（※本記載は記入例です-プロジェクトに合わせて内容を更新してください-）
+# ディレクトリ構成
 
 以下のディレクトリ構造に従って実装を行ってください：
 
 ```
-/
-├── app/                          # Next.jsのアプリケーションディレクトリ
-│   ├── api/                      # APIエンドポイント
-│   │   └── [endpoint]/
-│   │       └── route.ts
-│   ├── components/               # アプリケーションコンポーネント
-│   │   ├── ui/                   # 基本UI（button, card等）
-│   │   └── layout/               # レイアウト関連
-│   ├── hooks/                    # カスタムフック
-│   ├── lib/                      # ユーティリティ
-│   │   ├── api/                  # API関連処理
-│   │   │   ├── client.ts         # 変更禁止: AIモデル設定
-│   │   │   ├── types.ts          # 変更禁止: 型定義
-│   │   │   └── config.ts         # 変更禁止: 環境設定
-│   │   └── utils/                # 共通関数
-│   ├── styles/                   # スタイル定義
-│   ├── favicon.ico               # ファビコン
-│   ├── globals.css               # グローバルスタイル
-│   ├── layout.tsx                # ルートレイアウト
-│   └── page.tsx                  # ホームページ
-├── public/                       # 静的ファイル
-├── node_modules/                 # 依存パッケージ
-├── .git/                         # Gitリポジトリ
-├── .cursor/                      # Cursor設定
-├── package.json                  # プロジェクト設定
-├── package-lock.json             # 依存関係ロックファイル
-├── tsconfig.json                 # TypeScript設定
-├── next-env.d.ts                 # Next.js型定義
-├── next.config.ts                # Next.js設定
-├── postcss.config.mjs            # PostCSS設定
-├── eslint.config.mjs             # ESLint設定
-└── .gitignore                    # Git除外設定
+project/
+├── app/                    # Laravelアプリケーションコード
+│   ├── Console/           # Artisanコマンド
+│   ├── Exceptions/        # 例外ハンドラー
+│   ├── Http/              
+│   │   ├── Controllers/   # コントローラー
+│   │   ├── Middleware/    # ミドルウェア
+│   │   └── Requests/      # フォームリクエスト
+│   ├── Models/            # Eloquentモデル
+│   ├── Providers/         # サービスプロバイダー
+│   ├── Repositories/      # リポジトリクラス
+│   └── Services/          # サービスクラス
+├── bootstrap/             # フレームワーク起動ファイル
+├── config/                # 設定ファイル
+├── database/              # データベース関連
+│   ├── factories/         # モデルファクトリー
+│   ├── migrations/        # マイグレーション
+│   └── seeders/          # シーダー
+├── docker/                # Docker設定
+├── docs/                  # ドキュメント
+│   ├── startup/          # 初期設計書
+│   └── design/           # 追加設計書
+├── public/                # 公開ディレクトリ
+│   └── build/            # コンパイル済みアセット
+├── resources/             # フロントエンドリソース
+│   ├── css/              # スタイルシート
+│   ├── js/               # Vueコンポーネント
+│   │   ├── components/   # コンポーネント
+│   │   │   ├── atoms/    # 原子コンポーネント
+│   │   │   │   ├── buttons/     # ボタン
+│   │   │   │   ├── inputs/      # 入力フィールド
+│   │   │   │   ├── icons/       # アイコン
+│   │   │   │   └── typography/  # テキスト要素
+│   │   │   ├── molecules/  # 分子コンポーネント
+│   │   │   │   ├── forms/       # フォーム
+│   │   │   │   ├── cards/       # カード
+│   │   │   │   └── lists/       # リスト
+│   │   │   ├── organisms/  # 有機体コンポーネント
+│   │   │   │   ├── headers/     # ヘッダー
+│   │   │   │   ├── sidebars/    # サイドバー
+│   │   │   │   ├── tables/      # テーブル
+│   │   │   │   └── modals/      # モーダル
+│   │   │   └── templates/  # テンプレート
+│   │   │       ├── layouts/     # レイアウト
+│   │   │       └── sections/    # セクション
+│   │   ├── composables/  # コンポジション関数
+│   │   ├── pages/        # ページコンポーネント
+│   │   ├── router/       # Vue Router設定
+│   │   └── stores/       # Piniaストア
+│   └── views/            # Bladeテンプレート
+├── routes/                # ルート定義
+│   ├── api.php           # APIルート
+│   ├── channels.php      # ブロードキャストチャネル
+│   ├── console.php       # コンソールルート
+│   └── web.php           # Webルート
+├── storage/               # アプリケーションストレージ
+├── tests/                 # テストコード
+│   ├── Feature/          # 機能テスト
+│   └── Unit/             # 単体テスト
+└── vendor/                # Composer依存パッケージ
 ```
 
 ### 配置ルール
-- UIコンポーネント → `app/components/ui/`
-- APIエンドポイント → `app/api/[endpoint]/route.ts`
-- 共通処理 → `app/lib/utils/`
-- API関連処理 → `app/lib/api/`
+- コントローラー → `app/Http/Controllers/`
+  - API用 → `app/Http/Controllers/Api/`
+  - Web用 → `app/Http/Controllers/Web/`
+- Vueコンポーネント → `resources/js/components/`
+  - Atomic Design構造：
+    - atoms → 最小単位のUI要素（ボタン、入力フィールド等）
+    - molecules → atomsを組み合わせた小規模なコンポーネント
+    - organisms → moleculesを組み合わせた機能的なコンポーネント
+    - templates → organismsを配置したページテンプレート
+    - pages → 実際のページコンポーネント
+- APIルート → `routes/api.php`
+- 共通処理 → `app/Services/`
+- リポジトリ → `app/Repositories/`
+- テスト → `tests/Feature/` または `tests/Unit/`
