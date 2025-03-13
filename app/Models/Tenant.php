@@ -14,12 +14,14 @@ class Tenant extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'domain',
         'plan_type',
+        'status',
+        'settings',
     ];
 
     /**
@@ -31,6 +33,7 @@ class Tenant extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'settings' => 'array',
     ];
 
     /**

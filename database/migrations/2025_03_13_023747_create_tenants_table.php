@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('domain')->nullable()->unique();
             $table->string('plan_type', 50)->default('free');
+            $table->string('status', 50)->default('active');
+            $table->jsonb('settings')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
