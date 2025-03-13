@@ -219,29 +219,29 @@
 ### 6.1 単体テスト
 - [ ] PHPUnit設定
 - [ ] Jest設定
-- [ ] モデルテスト実装
-  - [ ] Tenantモデルテスト
-    - [ ] テナント作成テスト
-    - [ ] テナント削除テスト（ソフトデリート）
-    - [ ] リレーション（users, tracking_tags, tracking_events）テスト
-  - [ ] Userモデルテスト
-    - [ ] ユーザー作成テスト
-    - [ ] パスワードハッシュ化テスト
-    - [ ] ロール判定テスト（isSuperAdmin, isTenantAdmin）
-    - [ ] リレーション（tenant, tracking_tags, settings）テスト
-  - [ ] TrackingTagモデルテスト
-    - [ ] タグ作成テスト
-    - [ ] UUID自動生成テスト
-    - [ ] リレーション（tenant, user, tracking_events）テスト
-  - [ ] TrackingEventモデルテスト
-    - [ ] イベント作成テスト
-    - [ ] JSON/配列型キャストテスト
-    - [ ] リレーション（tenant, tracking_tag）テスト
-  - [ ] UserSettingモデルテスト
+- [x] モデルテスト実装
+  - [x] Tenantモデルテスト
+    - [x] テナント作成テスト
+    - [x] テナント削除テスト（ソフトデリート）
+    - [x] リレーション（users, tracking_tags, tracking_events）テスト
+  - [x] Userモデルテスト
+    - [x] ユーザー作成テスト
+    - [x] パスワードハッシュ化テスト
+    - [x] ロール判定テスト（isSuperAdmin, isTenantAdmin）
+    - [x] リレーション（tenant, tracking_tags, settings）テスト
+  - [x] TrackingTagモデルテスト
+    - [x] タグ作成テスト
+    - [x] UUID自動生成テスト
+    - [x] リレーション（tenant, user, tracking_events）テスト
+  - [x] TrackingEventモデルテスト
+    - [x] イベント作成テスト
+    - [x] JSON/配列型キャストテスト
+    - [x] リレーション（tenant, tracking_tag）テスト
+  - [x] UserSettingモデルテスト
     - [x] 設定作成テスト
     - [x] JSON型キャストテスト
     - [x] リレーション（user）テスト
-  - [ ] SystemSettingモデルテスト
+  - [x] SystemSettingモデルテスト
     - [x] 設定作成テスト
     - [x] JSON型キャストテスト
     - [x] テナント設定可能フラグテスト
