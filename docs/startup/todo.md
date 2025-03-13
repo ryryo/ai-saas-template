@@ -50,8 +50,8 @@
 - [x] User モデル作成（認証機能含む）
 - [x] TrackingTag モデル作成
 - [x] TrackingEvent モデル作成
-- [ ] UserSetting モデル作成
-- [ ] SystemSetting モデル作成
+- [x] UserSetting モデル作成
+- [x] SystemSetting モデル作成
 - [ ] AISuggestion モデル作成
 - [x] モデル間リレーション設定
 
@@ -220,6 +220,31 @@
 - [ ] PHPUnit設定
 - [ ] Jest設定
 - [ ] モデルテスト実装
+  - [ ] Tenantモデルテスト
+    - [ ] テナント作成テスト
+    - [ ] テナント削除テスト（ソフトデリート）
+    - [ ] リレーション（users, tracking_tags, tracking_events）テスト
+  - [ ] Userモデルテスト
+    - [ ] ユーザー作成テスト
+    - [ ] パスワードハッシュ化テスト
+    - [ ] ロール判定テスト（isSuperAdmin, isTenantAdmin）
+    - [ ] リレーション（tenant, tracking_tags, settings）テスト
+  - [ ] TrackingTagモデルテスト
+    - [ ] タグ作成テスト
+    - [ ] UUID自動生成テスト
+    - [ ] リレーション（tenant, user, tracking_events）テスト
+  - [ ] TrackingEventモデルテスト
+    - [ ] イベント作成テスト
+    - [ ] JSON/配列型キャストテスト
+    - [ ] リレーション（tenant, tracking_tag）テスト
+  - [ ] UserSettingモデルテスト
+    - [ ] 設定作成テスト
+    - [ ] JSON型キャストテスト
+    - [ ] リレーション（user）テスト
+  - [ ] SystemSettingモデルテスト
+    - [ ] 設定作成テスト
+    - [ ] JSON型キャストテスト
+    - [ ] テナント設定可能フラグテスト
 - [ ] コントローラーテスト実装
 - [ ] サービステスト実装
 - [ ] Vue コンポーネントテスト実装
