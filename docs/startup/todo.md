@@ -15,8 +15,6 @@
 - [x] Docker開発環境構築
 - [x] .env ファイル設定
 - [x] GitHubリポジトリ設定
-- [ ] CIパイプライン構築（GitHub Actions）
-- [ ] コーディング規約の設定（ESLint, PHP-CS-Fixer）
 
 ### 1.2 ライブラリ・パッケージ導入
 - [ ] Laravel Sanctum導入（認証）

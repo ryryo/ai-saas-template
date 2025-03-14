@@ -119,31 +119,83 @@ graph TD
 
 AI-SaaS テンプレートはマルチテナントアーキテクチャを採用しています。各テナントは論理的に分離され、以下の特徴があります：
 
+#### 3.1.1 設計思想
+
+- **現在の実装：1テナント＝1管理者**
+  - シンプルで管理が容易な設計を採用
+  - テナントが直接認証の主体となる（ユーザーという概念は使用しない）
+  - テナントに認証・権限情報を直接保持（email, password, role等）
+
+- **将来の拡張性への配慮**
+  - テナント内での複数ユーザー管理への拡張を想定
+  - 例：企業アカウントでの社員管理、チーム内でのロール管理
+  - そのため「テナント」という用語を一貫して使用し、「ユーザー」という用語は避ける
+  - 将来的なユーザーテーブルの追加に対応できる設計
+
+#### 3.1.2 現在の実装詳細
+
 - 単一データベース内でテナントIDによる分離
+- ユーザー認証ベースのテナント識別（URLやドメインによる分離は行わない）
 - 全テナント関連テーブルに「tenant_id」カラムを含める
 - LaravelミドルウェアとEloquentのグローバルスコープを活用
 - 共有データ（プラン情報、グローバル設定等）は専用テーブルで管理
 
 ```mermaid
 graph TD
-    subgraph "マルチテナント構成"
-        Tenant1[テナント1]
-        Tenant2[テナント2]
-        TenantN[テナントN]
+    subgraph "認証フロー"
+        Login[ログイン]
+        User[ユーザー]
+        Session[セッション]
         
-        Tenant1 --> Filter1[テナントIDフィルター]
-        Tenant2 --> Filter2[テナントIDフィルター]
-        TenantN --> FilterN[テナントIDフィルター]
-        
-        Filter1 --> SharedDB[(共有データベース)]
-        Filter2 --> SharedDB
-        FilterN --> SharedDB
-        
-        SharedDB --> TenantData1[(テナント1データ)]
-        SharedDB --> TenantData2[(テナント2データ)]
-        SharedDB --> TenantDataN[(テナントNデータ)]
-        SharedDB --> GlobalData[(グローバルデータ)]
+        Login --> User
+        User --> Session
+        Session --> TenantContext[テナントコンテキスト]
     end
+    
+    subgraph "データアクセス制御"
+        TenantContext --> Filter[テナントIDフィルター]
+        Filter --> SharedDB[(共有データベース)]
+        
+        SharedDB --> TenantData[テナントデータ]
+        SharedDB --> GlobalData[グローバルデータ]
+    end
+```
+
+#### 3.1.3 認証・認可の設定
+
+```php
+// config/sanctum.php
+return [
+    'expiration' => 60 * 24,     // アクセストークン：24時間
+    'refresh_ttl' => 20160,      // リフレッシュトークン：2週間（分単位）
+];
+
+// config/session.php
+return [
+    'lifetime' => 120,           // セッション：2時間
+    'expire_on_close' => false,
+    'secure' => env('SESSION_SECURE_COOKIE', true),
+];
+```
+
+#### 3.1.4 CORS設定（開発環境）
+
+```php
+// config/cors.php
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:3000',
+        'http://localhost:8000',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:8000'
+    ],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
+];
 ```
 
 ### 3.2 認証・認可フロー
