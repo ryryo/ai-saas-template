@@ -5,6 +5,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/',
+      name: 'home',
+      component: () => import('@/pages/Home.vue'),
+      meta: { guest: true },
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('@/components/auth/LoginForm.vue'),
@@ -16,6 +22,7 @@ const router = createRouter({
       component: () => import('@/pages/Dashboard.vue'),
       meta: { requiresAuth: true },
     },
+    /*
     {
       path: '/tracking-tags',
       name: 'tracking-tags',
@@ -34,10 +41,11 @@ const router = createRouter({
       component: () => import('@/pages/tenant/TenantList.vue'),
       meta: { requiresAuth: true, superAdmin: true },
     },
-    // ルートが見つからない場合はダッシュボードにリダイレクト
+    */
+    // ルートが見つからない場合はホームにリダイレクト
     {
       path: '/:pathMatch(.*)*',
-      redirect: { name: 'dashboard' },
+      redirect: { name: 'home' },
     },
   ],
 });
@@ -49,13 +57,13 @@ router.beforeEach(async (to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!auth.isAuthenticated) {
       next({ name: 'login' });
-    } else if (to.matched.some((record) => record.meta.superAdmin) && !auth.isSuperAdmin) {
-      next({ name: 'dashboard' });
+    // } else if (to.matched.some((record) => record.meta.superAdmin) && !auth.isSuperAdmin) {
+    //   next({ name: 'dashboard' });
     } else {
       next();
     }
   } else if (to.matched.some((record) => record.meta.guest)) {
-    if (auth.isAuthenticated) {
+    if (auth.isAuthenticated && to.name !== 'home') {
       next({ name: 'dashboard' });
     } else {
       next();

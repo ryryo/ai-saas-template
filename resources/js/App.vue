@@ -13,7 +13,7 @@ onMounted(async () => {
 });
 
 const showNavigation = computed(() => {
-  return auth.isAuthenticated && !route.meta.hideNavigation;
+  return auth.isAuthenticated && route.meta.requiresAuth;
 });
 </script>
 
@@ -22,7 +22,7 @@ const showNavigation = computed(() => {
     <Navigation v-if="showNavigation" />
     
     <main :class="{ 'sm:ml-64 pt-16': showNavigation }">
-      <div class="container mx-auto px-4 py-8">
+      <div :class="{ 'container mx-auto px-4 py-8': showNavigation }">
         <router-view />
       </div>
     </main>
