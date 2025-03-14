@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 認証不要のルート
-Route::post('/auth/login', [LoginController::class, 'login'])->name('auth.login');
+Route::post('/auth', [LoginController::class, 'login'])->name('auth.login');
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 
 // 認証が必要なルート
