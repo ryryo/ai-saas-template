@@ -12,7 +12,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     <!-- Scripts and Styles -->
-    @vite(['resources/css/app.css', 'resources/ts/app.ts'])
+    @vite(['resources/css/app.css', 'resources/js/app.ts'])
 </head>
 <body class="font-sans antialiased">
     <div id="app"></div>
