@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -17,78 +15,47 @@ class LoginController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function login(Request $request): JsonResponse
+    public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        $tenant = Tenant::where('email', $request->email)->first();
-
-        if (!$tenant || !Hash::check($request->password, $tenant->password)) {
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => ['メールアドレスまたはパスワードが正しくありません。'],
             ]);
         }
 
-        // テナントが無効化されている場合はログインを拒否
-        if ($tenant->status !== 'active') {
-            throw ValidationException::withMessages([
-                'email' => ['This account has been suspended.'],
-            ]);
-        }
-
-        // 最終ログイン日時を更新
-        $tenant->update(['last_login_at' => now()]);
-
-        // トークンを生成（APIアクセス用）
+        $tenant = Auth::user();
         $token = $tenant->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'tenant' => [
-                'id' => $tenant->id,
-                'name' => $tenant->name,
-                'email' => $tenant->email,
-                'role' => $tenant->role,
-                'plan_type' => $tenant->plan_type,
-                'status' => $tenant->status,
-                'last_login_at' => $tenant->last_login_at,
-            ],
+            'tenant' => $tenant,
         ]);
     }
 
     /**
      * Log the user out of the application.
      */
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request)
     {
-        // 現在のトークンを削除
-        if ($request->user()) {
-            $request->user()->currentAccessToken()->delete();
-        }
-
-        return response()->json(['message' => 'Successfully logged out']);
+        $request->user()->currentAccessToken()->delete();
+        
+        return response()->json([
+            'message' => 'ログアウトしました。',
+        ]);
     }
 
     /**
      * Get the authenticated tenant.
      */
-    public function me(Request $request): JsonResponse
+    public function me(Request $request)
     {
-        $tenant = $request->user();
-
         return response()->json([
-            'tenant' => [
-                'id' => $tenant->id,
-                'name' => $tenant->name,
-                'email' => $tenant->email,
-                'role' => $tenant->role,
-                'plan_type' => $tenant->plan_type,
-                'status' => $tenant->status,
-                'last_login_at' => $tenant->last_login_at,
-            ],
+            'data' => $request->user(),
         ]);
     }
 } 

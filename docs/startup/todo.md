@@ -7,6 +7,74 @@
     - [x] 完了時
     - [ ] 未完了時
 
+## 現在のフェーズ: テナント認証モデルへの移行
+
+### 既知の問題
+- [ ] CORS設定エラー
+  - 問題の根本原因: LoadConfiguration.phpのmergeableOptionsメソッドは、特定の設定ファイル名に対して、配列マージが必要なオプションのリストを返しているが、corsには対応していない。
+  - しかし、max_ageに対してarray_mergeが行われようとしていて、整数値（int）が渡されてエラーになっている。
+  - `array_merge(): Argument #2 must be of type array, int given` というエラーが発生。
+  - 試行済みの対応:
+    - max_ageを配列として定義（例: `['value' => 86400]`）→ エラー継続
+    - max_ageを整数として定義（例: `0` や `3600`）→ エラー継続
+    - max_ageを文字列として定義（例: `'3600'`）→ エラー継続
+  - 対応策検討中
+
+### 完了したフェーズ
+- [x] Phase 1: 基盤の準備
+  - [x] 認証設定の更新（config/auth.php）
+  - [x] データベース構造の更新（マイグレーション）
+
+- [x] Phase 2: モデルとスコープの実装
+  - [x] TrackingTagモデルの実装
+  - [x] TrackingEventモデルの実装
+  - [x] TenantSettingモデルの実装
+  - [x] SystemSettingモデルの実装
+
+- [x] Phase 3: 認証周りの実装
+  - [x] 認証ミドルウェアの更新
+  - [x] 認証コントローラーの実装（Login/Register）
+  - [x] スーパー管理者ミドルウェアの実装
+
+- [x] Phase 4: APIとリソースの実装
+  - [x] TenantResourceの実装
+  - [x] TrackingTagResourceの実装
+  - [x] TrackingEventResourceの実装
+  - [x] TenantSettingResourceの実装
+  - [x] SystemSettingResourceの実装
+  - [x] APIルートの定義
+
+### 次のフェーズ
+- [ ] Phase 5: フロントエンド対応
+  - [ ] 認証関連のストア更新
+  - [ ] 型定義の更新
+  - [ ] コンポーネントの更新
+
+- [ ] Phase 6: テストとシードデータ
+  - [ ] ファクトリーの更新
+  - [ ] シーダーの更新
+  - [ ] テストの更新
+
+### 直近のタスク
+1. [ ] フロントエンドの認証ストアを更新
+   - [ ] useAuthStore の型定義更新
+   - [ ] ログイン処理の更新
+   - [ ] テナント情報の状態管理実装
+
+2. [ ] 認証関連の型定義更新
+   - [ ] Tenant型の定義
+   - [ ] API Response型の更新
+   - [ ] Store State型の更新
+
+3. [ ] 認証関連コンポーネントの更新
+   - [ ] ログインフォームの更新
+   - [ ] ユーザープロフィール表示の更新
+   - [ ] ナビゲーションメニューの更新
+
+---
+
+# 全体のタスクチェックリスト
+
 ## 1. プロジェクトセットアップ
 
 ### 1.1 開発環境構築
@@ -17,12 +85,12 @@
 - [x] GitHubリポジトリ設定
 
 ### 1.2 ライブラリ・パッケージ導入
-- [ ] Laravel Sanctum導入（認証）
-- [ ] Vue 3 + Composition API設定
-- [ ] Pinia導入（状態管理）
-- [ ] Tailwind CSS導入
-- [ ] Vue Router導入
-- [ ] Axios導入
+- [x] Laravel Sanctum導入（認証）
+- [x] Vue 3 + Composition API設定
+- [x] Pinia導入（状態管理）
+- [x] Tailwind CSS導入
+- [x] Vue Router導入
+- [x] Axios導入
 - [ ] テスト環境構築（PHPUnit, Jest, Cypress）
 - [ ] Chart.js導入（グラフ表示）
 - [ ] Vee-Validate導入（フォームバリデーション）
@@ -45,7 +113,6 @@
 
 ### 2.3 モデル
 - [x] Tenant モデル作成
-- [x] User モデル作成（認証機能含む）
 - [x] TrackingTag モデル作成
 - [x] TrackingEvent モデル作成
 - [x] UserSetting モデル作成
@@ -54,37 +121,36 @@
 - [x] モデル間リレーション設定
 
 ### 2.4 マルチテナント実装
-- [ ] TenantScope グローバルスコープ作成
-- [ ] テナントミドルウェア作成
-- [ ] テナント特定ロジック実装
+- [x] TenantScope グローバルスコープ作成
+- [x] テナントミドルウェア作成
+- [x] テナント特定ロジック実装
 
 ## 3. バックエンド実装
 
 ### 3.1 認証機能
-- [ ] Sanctum設定
-- [ ] ログイン処理実装
-- [ ] ログアウト処理実装
-- [ ] 権限管理（スーパー管理者、テナント管理者）
-- [ ] APIトークン認証対応
+- [x] Sanctum設定
+- [x] ログイン処理実装
+- [x] ログアウト処理実装
+- [x] 権限管理（スーパー管理者、テナント管理者）
+- [x] APIトークン認証対応
 
 ### 3.2 リポジトリパターン実装
-- [ ] BaseRepository インターフェース作成
-- [ ] TenantRepository 実装
-- [ ] UserRepository 実装
-- [ ] TrackingTagRepository 実装
-- [ ] TrackingEventRepository 実装
-- [ ] SettingsRepository 実装
+- [x] BaseRepository インターフェース作成
+- [x] TenantRepository 実装
+- [x] UserRepository 実装
+- [x] TrackingTagRepository 実装
+- [x] TrackingEventRepository 実装
+- [x] SettingsRepository 実装
 
 ### 3.3 API実装
-- [ ] テナント管理API実装
-- [ ] ユーザー管理API実装
-- [ ] トラッキングタグAPI実装
-- [ ] トラッキングイベント記録API実装
-- [ ] ユーザー設定API実装
-- [ ] システム設定API実装
+- [x] テナント管理API実装
+- [x] トラッキングタグAPI実装
+- [x] トラッキングイベント記録API実装
+- [x] ユーザー設定API実装
+- [x] システム設定API実装
 - [ ] AI分析・提案API実装
-- [ ] API例外処理・バリデーション実装
-- [ ] APIレスポンス形式統一
+- [x] API例外処理・バリデーション実装
+- [x] APIレスポンス形式統一
 
 ### 3.4 トラッキングシステム実装
 - [ ] トラッキングタグJavaScriptコード生成機能
@@ -222,11 +288,6 @@
     - [x] テナント作成テスト
     - [x] テナント削除テスト（ソフトデリート）
     - [x] リレーション（users, tracking_tags, tracking_events）テスト
-  - [x] Userモデルテスト
-    - [x] ユーザー作成テスト
-    - [x] パスワードハッシュ化テスト
-    - [x] ロール判定テスト（isSuperAdmin, isTenantAdmin）
-    - [x] リレーション（tenant, tracking_tags, settings）テスト
   - [x] TrackingTagモデルテスト
     - [x] タグ作成テスト
     - [x] UUID自動生成テスト
@@ -258,7 +319,6 @@
 - [ ] Cypress設定
 - [ ] 認証フローテスト実装
 - [ ] テナント管理フローテスト実装
-- [ ] ユーザー管理フローテスト実装
 - [ ] トラッキングタグ管理フローテスト実装
 - [ ] トラッキングイベント記録テスト実装
 - [ ] データ分析フローテスト実装

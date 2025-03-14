@@ -16,11 +16,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 認証不要のルート
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/auth/login', [LoginController::class, 'login'])->name('auth.login');
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 
 // 認証が必要なルート
 Route::middleware('auth:sanctum')->group(function () {
+    // 認証関連
+    Route::get('/auth/me', [LoginController::class, 'me'])->name('auth.me');
+    Route::post('/auth/logout', [LoginController::class, 'logout'])->name('auth.logout');
+
     // テナント情報
     Route::get('/tenant', [LoginController::class, 'me'])->name('tenant.me');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

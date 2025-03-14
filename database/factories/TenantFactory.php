@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Tenant>
@@ -20,15 +22,57 @@ class TenantFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company(),
-            'domain' => $this->faker->unique()->domainName(),
-            'plan_type' => $this->faker->randomElement(['free', 'basic', 'pro']),
-            'status' => $this->faker->randomElement(['active', 'inactive', 'suspended']),
-            'settings' => [
-                'max_users' => $this->faker->numberBetween(1, 100),
-                'max_storage' => $this->faker->numberBetween(100, 1000),
-                'features' => $this->faker->randomElements(['analytics', 'api', 'custom_domain'], 2),
-            ],
+            'name' => fake()->company(),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
+            'remember_token' => Str::random(10),
+            'role' => 'tenant_admin',
+            'plan_type' => 'standard',
+            'status' => 'active',
+            'domain' => null,
+            'settings' => [],
+            'last_login_at' => null,
         ];
+    }
+
+    /**
+     * スーパー管理者として設定
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'super_admin',
+        ]);
+    }
+
+    /**
+     * テナント管理者として設定
+     */
+    public function tenantAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'tenant_admin',
+        ]);
+    }
+
+    /**
+     * 無料プランとして設定
+     */
+    public function freePlan(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'plan_type' => 'free',
+        ]);
+    }
+
+    /**
+     * プレミアムプランとして設定
+     */
+    public function premiumPlan(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'plan_type' => 'premium',
+        ]);
     }
 }
