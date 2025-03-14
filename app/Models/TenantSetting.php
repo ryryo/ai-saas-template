@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TrackingEvent extends Model
+class TenantSetting extends Model
 {
     use HasFactory;
 
@@ -18,15 +18,8 @@ class TrackingEvent extends Model
      */
     protected $fillable = [
         'tenant_id',
-        'tag_id',
-        'event_type',
-        'page_url',
-        'element_id',
-        'element_class',
-        'user_agent',
-        'properties',
-        'client_ip',
-        'event_time',
+        'theme',
+        'notification_preferences',
     ];
 
     /**
@@ -35,9 +28,7 @@ class TrackingEvent extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'user_agent' => 'array',
-        'properties' => 'array',
-        'event_time' => 'datetime',
+        'notification_preferences' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -51,18 +42,10 @@ class TrackingEvent extends Model
     }
 
     /**
-     * Get the tenant that owns the tracking event.
+     * Get the tenant that owns the settings.
      */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
-
-    /**
-     * Get the tracking tag that owns the event.
-     */
-    public function trackingTag(): BelongsTo
-    {
-        return $this->belongsTo(TrackingTag::class, 'tag_id');
-    }
-}
+} 
