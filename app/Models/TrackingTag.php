@@ -19,7 +19,6 @@ class TrackingTag extends Model
      */
     protected $fillable = [
         'tenant_id',
-        'user_id',
         'name',
         'tag_key',
         'description',
@@ -55,14 +54,6 @@ class TrackingTag extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
-    }
-
-    /**
-     * Get the user that owns the tracking tag.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     /**

@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Tenant extends Model
+class Tenant extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -18,10 +21,24 @@ class Tenant extends Model
      */
     protected $fillable = [
         'name',
+        'email',
+        'password',
+        'role',
         'domain',
         'plan_type',
         'status',
         'settings',
+        'last_login_at',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -30,18 +47,29 @@ class Tenant extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'settings' => 'array',
+        'last_login_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'settings' => 'array',
     ];
 
     /**
-     * Get the users for the tenant.
+     * スーパー管理者かどうかを判定
      */
-    public function users(): HasMany
+    public function isSuperAdmin(): bool
     {
-        return $this->hasMany(User::class);
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * テナント管理者かどうかを判定
+     */
+    public function isTenantAdmin(): bool
+    {
+        return $this->role === 'tenant_admin';
     }
 
     /**
@@ -58,5 +86,13 @@ class Tenant extends Model
     public function trackingEvents(): HasMany
     {
         return $this->hasMany(TrackingEvent::class);
+    }
+
+    /**
+     * Get the tenant settings.
+     */
+    public function settings(): HasMany
+    {
+        return $this->hasMany(TenantSetting::class);
     }
 }
