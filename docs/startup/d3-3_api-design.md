@@ -2,11 +2,24 @@
 
 本ドキュメントでは、AI-SaaS テンプレートのAPI設計について説明します。RESTful APIの原則に従い、JSON形式でデータをやり取りします。
 
-## 1. 認証方式
+## 1. API設計の基本方針
 
-### 1.1 認証フロー
+### 1.1 認証の考え方
 
-API認証にはLaravel Sanctumを使用し、SPA（Single Page Application）認証を実装します。
+- **現在の実装**
+  - テナントを認証の主体として扱う
+  - 1テナント＝1管理者の単純な構造を採用
+  - テナント情報に認証・権限情報を直接含める
+
+- **将来の拡張性**
+  - テナント内での複数ユーザー管理への拡張を想定
+  - 現時点では「テナント」という用語で統一
+  - 将来的なユーザー管理APIの追加に対応できる設計
+  - APIレスポンスは拡張性を考慮した構造
+
+### 1.2 認証方式
+
+Laravel Sanctumを使用したSPA認証を採用します。
 
 ```mermaid
 sequenceDiagram
@@ -22,7 +35,7 @@ sequenceDiagram
     API-->>Frontend: レスポンス
 ```
 
-### 1.2 認証エンドポイント
+### 1.3 認証エンドポイント
 
 | エンドポイント | メソッド | 説明 |
 |--------------|---------|------|
@@ -30,7 +43,7 @@ sequenceDiagram
 | `/api/logout` | POST | ユーザーログアウト |
 | `/api/user` | GET | 認証済みユーザー情報取得 |
 
-### 1.3 APIトークン
+### 1.4 APIトークン
 
 モバイルアプリやサードパーティ連携用に、APIトークン認証も提供します。
 
@@ -46,27 +59,19 @@ Authorization: Bearer {api_token}
 |--------------|---------|------|------------|
 | `/api/tenants` | GET | テナント一覧取得 | super_admin |
 | `/api/tenants` | POST | テナント作成 | super_admin |
-| `/api/tenants/{id}` | GET | テナント詳細取得 | super_admin, tenant_admin* |
-| `/api/tenants/{id}` | PUT | テナント更新 | super_admin, tenant_admin* |
+| `/api/tenants/{id}` | GET | テナント詳細取得 | super_admin, 本人* |
+| `/api/tenants/{id}` | PUT | テナント更新 | super_admin, 本人* |
 | `/api/tenants/{id}` | DELETE | テナント削除 | super_admin |
+| `/api/tenants/{id}/settings` | GET | テナント設定取得 | super_admin, 本人* |
+| `/api/tenants/{id}/settings` | PUT | テナント設定更新 | super_admin, 本人* |
+| `/api/tenants/{id}/password` | PUT | パスワード更新 | super_admin, 本人* |
+| `/api/tenants/{id}/email` | PUT | メールアドレス更新 | super_admin, 本人* |
 
-*tenant_adminは自分のテナントのみアクセス可能
+*本人とは、該当のテナントIDを持つテナント自身を指します
 
-### 2.2 ユーザー管理 API
+注: 将来的なマルチユーザー対応時には、ユーザー管理APIを追加予定です。現時点では各テナントが直接認証の主体となります。
 
-| エンドポイント | メソッド | 説明 | アクセス権限 |
-|--------------|---------|------|------------|
-| `/api/users` | GET | ユーザー一覧取得 | super_admin, tenant_admin* |
-| `/api/users` | POST | ユーザー作成 | super_admin, tenant_admin* |
-| `/api/users/{id}` | GET | ユーザー詳細取得 | super_admin, tenant_admin*, 本人 |
-| `/api/users/{id}` | PUT | ユーザー更新 | super_admin, tenant_admin*, 本人 |
-| `/api/users/{id}` | DELETE | ユーザー削除 | super_admin, tenant_admin* |
-| `/api/users/{id}/settings` | GET | ユーザー設定取得 | super_admin, tenant_admin*, 本人 |
-| `/api/users/{id}/settings` | PUT | ユーザー設定更新 | super_admin, tenant_admin*, 本人 |
-
-*tenant_adminは自分のテナント内のユーザーのみアクセス可能
-
-### 2.3 トラッキングタグ API
+### 2.2 トラッキングタグ API
 
 | エンドポイント | メソッド | 説明 | アクセス権限 |
 |--------------|---------|------|------------|
@@ -79,7 +84,7 @@ Authorization: Bearer {api_token}
 
 *自分のテナントのタグのみアクセス可能
 
-### 2.4 トラッキングイベント API
+### 2.3 トラッキングイベント API
 
 | エンドポイント | メソッド | 説明 | アクセス権限 |
 |--------------|---------|------|------------|
@@ -90,7 +95,7 @@ Authorization: Bearer {api_token}
 
 *自分のテナントのイベントのみアクセス可能
 
-### 2.5 AI分析・提案 API
+### 2.4 AI分析・提案 API
 
 | エンドポイント | メソッド | 説明 | アクセス権限 |
 |--------------|---------|------|------------|
@@ -100,7 +105,7 @@ Authorization: Bearer {api_token}
 
 *自分のテナントのデータのみアクセス可能
 
-### 2.6 システム設定 API
+### 2.5 システム設定 API
 
 | エンドポイント | メソッド | 説明 | アクセス権限 |
 |--------------|---------|------|------------|
@@ -229,10 +234,35 @@ POST /api/login
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "password",
-  "remember": true
+  "email": "tenant@example.com",
+  "password": "password"
 }
+```
+
+#### レスポンス
+
+```json
+{
+  "tenant": {
+    "id": 1,
+    "name": "テナント企業名",
+    "email": "tenant@example.com",
+    "role": "admin",
+    "plan_type": "standard",
+    "status": "active",
+    "last_login_at": "2024-03-14T10:00:00Z"
+  }
+}
+```
+
+※ 将来的なユーザー管理機能追加時は、レスポンス構造を拡張予定
+
+### 4.2 認証済みテナント情報取得
+
+#### リクエスト
+
+```
+GET /api/tenant
 ```
 
 #### レスポンス
@@ -241,20 +271,44 @@ POST /api/login
 {
   "success": true,
   "data": {
-    "user": {
-      "id": 1,
-      "name": "ユーザー名",
+    "tenant": {
+      "id": 5,
+      "name": "テナント名",
       "email": "user@example.com",
       "role": "tenant_admin",
-      "tenant_id": 5,
+      "plan_type": "premium",
+      "status": "active",
       "last_login_at": "2023-03-15T09:30:00Z"
     },
-    "token": "api_token_string"  // APIトークン認証時のみ
+    "settings": {
+      "theme": "light",
+      "notification_preferences": {
+        "email": true,
+        "push": false
+      }
+    }
   }
 }
 ```
 
-### 4.2 トラッキングタグ作成
+### 4.3 ログアウト
+
+#### リクエスト
+
+```
+POST /api/logout
+```
+
+#### レスポンス
+
+```json
+{
+  "success": true,
+  "message": "ログアウトしました"
+}
+```
+
+### 4.4 トラッキングタグ作成
 
 #### リクエスト
 
@@ -277,7 +331,6 @@ POST /api/tracking-tags
   "data": {
     "id": 123,
     "tenant_id": 5,
-    "user_id": 1,
     "name": "ホームページCTAボタン",
     "tag_key": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "description": "トップページの申し込みボタンのトラッキング",
@@ -288,7 +341,7 @@ POST /api/tracking-tags
 }
 ```
 
-### 4.3 トラッキングイベント記録
+### 4.5 トラッキングイベント記録
 
 #### リクエスト
 
@@ -322,7 +375,7 @@ POST /api/tracking-events
 }
 ```
 
-### 4.4 AI分析リクエスト
+### 4.6 AI分析リクエスト
 
 #### リクエスト
 
@@ -340,52 +393,3 @@ POST /api/ai/analyze
   "analysis_type": "conversion_optimization"
 }
 ```
-
-#### レスポンス
-
-```json
-{
-  "success": true,
-  "data": {
-    "analysis_id": "anl_a1b2c3d4e5f6",
-    "status": "processing",
-    "estimated_completion_time": "2023-03-15T11:05:00Z"
-  }
-}
-```
-
-## 5. レート制限
-
-APIには以下のレート制限が適用されます：
-
-| エンドポイント | 制限 | 期間 | 適用範囲 |
-|--------------|------|------|---------|
-| 認証エンドポイント | 10リクエスト | 1分 | IPアドレスごと |
-| 一般API | 60リクエスト | 1分 | ユーザーごと |
-| トラッキングイベント記録 | 1000リクエスト | 1分 | タグキーごと |
-| AI分析 | 10リクエスト | 1時間 | テナントごと |
-
-## 6. エラーコード
-
-| エラーコード | 説明 |
-|------------|------|
-| `auth_failed` | 認証失敗 |
-| `invalid_credentials` | 認証情報不正 |
-| `validation_error` | バリデーションエラー |
-| `resource_not_found` | リソースが見つからない |
-| `permission_denied` | 権限不足 |
-| `rate_limit_exceeded` | レート制限超過 |
-| `server_error` | サーバーエラー |
-| `invalid_tag_key` | 無効なタグキー |
-| `tenant_inactive` | テナント無効 |
-| `ai_service_unavailable` | AI分析サービス利用不可 |
-
-## 7. APIバージョニング
-
-APIはバージョニングをサポートし、URLパスにバージョンを含めることができます：
-
-```
-/api/v1/users
-```
-
-デフォルトでは最新バージョンが使用されます。 
