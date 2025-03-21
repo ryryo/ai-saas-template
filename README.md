@@ -82,6 +82,65 @@ npm run dev
    npm run dev
    ```
 
+## テストの実行
+
+### テスト環境のセットアップ
+
+テストを実行する前に、テスト用のデータベースが作成されていることを確認してください：
+
+```bash
+# テスト用データベースの作成
+docker exec -it ai-saas-db psql -U postgres -c "CREATE DATABASE testing;"
+```
+
+### テストの実行方法
+
+```bash
+# 全てのテストを実行
+docker compose exec app php artisan test
+
+# 特定のテストファイルを実行
+docker compose exec app php artisan test tests/Feature/Auth/LoginTest.php
+
+# 特定のテストメソッドを実行
+docker compose exec app php artisan test --filter=test_super_admin_can_authenticate
+
+# テストカバレッジレポートの生成（要Xdebug）
+docker compose exec app php artisan test --coverage
+```
+
+### テストの種類
+
+1. **機能テスト（Feature Tests）**
+   - `tests/Feature` ディレクトリに配置
+   - APIエンドポイント、認証、データベース操作などの統合テスト
+   - 例：ログイン、ユーザー登録、テナント管理など
+
+2. **単体テスト（Unit Tests）**
+   - `tests/Unit` ディレクトリに配置
+   - 個々のクラスやメソッドの独立したテスト
+   - 例：ユーティリティ関数、サービスクラスなど
+
+### テストの作成
+
+新しいテストファイルを作成する場合：
+
+```bash
+# 機能テストの作成
+docker compose exec app php artisan make:test UserRegistrationTest
+
+# 単体テストの作成
+docker compose exec app php artisan make:test UserServiceTest --unit
+```
+
+### CI/CDパイプライン
+
+GitHub Actionsを使用して、以下のタイミングでテストが自動実行されます：
+
+- プルリクエスト作成時
+- mainブランチへのマージ時
+- リリースタグの作成時
+
 ## 技術スタック
 
 - **フロントエンド**
