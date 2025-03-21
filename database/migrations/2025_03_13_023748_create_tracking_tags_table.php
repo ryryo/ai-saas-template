@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateTrackingTagsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('tracking_tags', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('tag_key', 36)->unique();
             $table->text('description')->nullable();
@@ -25,7 +24,6 @@ return new class extends Migration
         // インデックスを追加
         Schema::table('tracking_tags', function (Blueprint $table) {
             $table->index('tenant_id');
-            $table->index('user_id');
             $table->index('tag_key');
         });
     }
@@ -37,4 +35,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('tracking_tags');
     }
-};
+}

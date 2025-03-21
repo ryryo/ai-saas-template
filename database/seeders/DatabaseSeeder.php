@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,15 +13,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // スーパー管理者テナント
+        Tenant::create([
+            'name' => 'スーパー管理者',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'super_admin',
+            'plan_type' => 'premium',
+            'status' => 'active',
         ]);
 
-        $this->call([
-            TenantSeeder::class,
+        // デモテナント
+        Tenant::create([
+            'name' => 'デモテナント',
+            'email' => 'demo@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'tenant_admin',
+            'plan_type' => 'free',
+            'status' => 'active',
         ]);
     }
 }

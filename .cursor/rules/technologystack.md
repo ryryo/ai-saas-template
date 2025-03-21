@@ -1,7 +1,7 @@
 # 技術スタック
 
 ## コア技術
-- PHP: ^8.2
+- PHP: 8.3.17
 - Node.js: ^20.0.0
 - TypeScript: ^5.3.3
 
@@ -13,7 +13,7 @@
 - Vite: ^6.0.11
 
 ## バックエンド
-- Laravel: ^12.0
+- Laravel: 12.2.0
 - Laravel Sanctum: ^4.0
 - Laravel Tinker: ^2.10.1
 

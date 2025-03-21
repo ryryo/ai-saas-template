@@ -326,6 +326,78 @@ graph TD
     OpenAI --> CustomLogic
 ```
 
+### 3.4 URLパス設計ルール
+
+#### 3.4.1 基本方針
+
+- **ユーザー向けURL（フロントエンド）**
+  - シンプルで覚えやすいパス構造を採用
+  - 階層は最小限に抑える
+  - 認証・認可に関係なく一貫したパス構造を維持
+
+- **API エンドポイント**
+  - RESTful APIの原則に従う
+  - 全てのAPIパスは`/api`プレフィックスを使用
+  - 認証関連は`/api/auth/*`配下に集約
+
+#### 3.4.2 フロントエンドのURLパス構造
+
+| パス | 説明 | アクセス制御 |
+|------|------|------------|
+| `/` | ホームページ | 全ユーザー |
+| `/login` | ログインページ | 未認証ユーザー |
+| `/register` | 登録ページ | 未認証ユーザー |
+| `/dashboard` | ダッシュボード | 認証済みユーザー |
+| `/settings` | 設定ページ | 認証済みユーザー |
+| `/tracking` | トラッキング管理 | 認証済みユーザー |
+| `/admin/*` | 管理者機能 | スーパー管理者 |
+
+#### 3.4.3 APIエンドポイントの構造
+
+| パス | 説明 | 用途 |
+|------|------|------|
+| `/api/auth/login` | ログインAPI | 認証処理 |
+| `/api/auth/logout` | ログアウトAPI | 認証処理 |
+| `/api/auth/me` | ユーザー情報取得 | 認証情報 |
+| `/api/tenant/*` | テナント関連API | テナント管理 |
+| `/api/tracking-tags/*` | トラッキングタグAPI | タグ管理 |
+| `/api/tracking-events/*` | イベントAPI | イベント管理 |
+
+#### 3.4.4 命名規則
+
+- **フロントエンドURL**
+  - 小文字のみを使用
+  - 単語間はハイフン（`-`）で区切る
+  - 複数形は使用しない
+  - 例：`/admin/tenant-list`
+
+- **APIエンドポイント**
+  - リソース名は複数形を使用
+  - 単語間はハイフン（`-`）で区切る
+  - RESTfulな命名規則に従う
+  - 例：`/api/tracking-events`
+
+#### 3.4.5 URLとAPIの対応関係
+
+```mermaid
+graph TD
+    subgraph "フロントエンドURL"
+        Login[/login]
+        Dashboard[/dashboard]
+        Settings[/settings]
+    end
+    
+    subgraph "APIエンドポイント"
+        AuthLogin[/api/auth/login]
+        AuthMe[/api/auth/me]
+        TenantSettings[/api/tenant/settings]
+    end
+    
+    Login --> AuthLogin
+    Dashboard --> AuthMe
+    Settings --> TenantSettings
+```
+
 ## 4. スケーラビリティと拡張性
 
 システムは以下の点でスケーラビリティと拡張性を確保しています：

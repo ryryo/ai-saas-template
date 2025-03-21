@@ -68,5 +68,38 @@ export const useAuthStore = defineStore('auth', {
         this.isLoading = false;
       }
     },
+
+    async fetchCurrentTenant() {
+      this.isLoading = true;
+      try {
+        const response = await axios.get<{ tenant: Tenant }>('/api/tenant');
+        this.tenant = response.data.tenant;
+        this.isAuthenticated = true;
+        return response.data.tenant;
+      } catch (error: any) {
+        this.tenant = null;
+        this.isAuthenticated = false;
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    setAuthData(data: AuthResponse) {
+      this.tenant = data.tenant;
+      this.isAuthenticated = true;
+      // トークンをlocalStorageに保存
+      localStorage.setItem('token', data.token);
+      // Axiosのデフォルトヘッダーにトークンを設定
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+    },
+
+    clearAuthData() {
+      this.tenant = null;
+      this.isAuthenticated = false;
+      // トークンを削除
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+    },
   },
 }); 

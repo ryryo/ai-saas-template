@@ -71,7 +71,8 @@ const handleSubmit = async () => {
 
   try {
     await auth.login(email.value, password.value);
-    router.push('/dashboard');
+    const redirectPath = router.currentRoute.value.query.redirect as string;
+    router.push(redirectPath || '/dashboard');
   } catch (e: any) {
     error.value = e.response?.data?.message || 'ログインに失敗しました。';
   } finally {

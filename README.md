@@ -37,6 +37,9 @@ docker compose exec app php artisan key:generate
 
 # データベースのマイグレーション
 docker compose exec app php artisan migrate
+
+# シードデータの投入
+docker compose exec app php artisan db:seed
 ```
 
 ### 4. フロントエンドのセットアップ
@@ -48,6 +51,22 @@ npm install
 # 開発サーバーの起動
 npm run dev
 ```
+
+## デフォルトのログイン情報
+
+セットアップ後、以下のアカウントでログインできます：
+
+### スーパー管理者アカウント
+- メールアドレス: `admin@example.com`
+- パスワード: `password`
+- 権限: システム全体の管理が可能
+
+### デモテナントアカウント
+- メールアドレス: `demo@example.com`
+- パスワード: `password`
+- 権限: 一般的なテナント機能のテストが可能
+
+※ これらは開発環境用のアカウントです。本番環境では必ず変更してください。
 
 ## 開発サーバーの起動
 
