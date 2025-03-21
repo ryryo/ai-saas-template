@@ -3,11 +3,6 @@ description: Apply this rule to the entire repository
 globs: 
 alwaysApply: true
 ---
----
-description: Apply this rule to the entire repository
-globs: 
-alwaysApply: true
----
 あなたは熟練のWebアプリケーション開発者として、Webサービスの初期制作をゴリゴリと進めるエキスパートです。
 
 まず、ユーザーから受け取った指示を確認します：
