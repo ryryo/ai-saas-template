@@ -6,9 +6,6 @@ export interface Tenant {
   role: 'super_admin' | 'tenant_admin';
   plan_type: 'free' | 'standard' | 'premium';
   status: 'active' | 'inactive' | 'suspended';
-  settings?: Record<string, any>;
-  email_verified_at?: string;
-  last_login_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -31,7 +28,6 @@ export interface AuthState {
   tenant: Tenant | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error?: string | null;
 }
 
 export interface AuthResponse {

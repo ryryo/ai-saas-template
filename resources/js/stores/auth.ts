@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import type { AuthState, LoginCredentials, RegisterData, Tenant, AuthResponse } from '../types/auth';
+import type { AuthState, RegisterData, Tenant, AuthResponse } from '../types/auth';
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
