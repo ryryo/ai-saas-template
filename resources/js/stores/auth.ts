@@ -33,6 +33,8 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post<AuthResponse>('/api/auth/login', { email, password });
         this.tenant = response.data.tenant;
         this.isAuthenticated = true;
+        localStorage.setItem('token', response.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         return true;
       } catch (error) {
         throw error;
@@ -44,14 +46,21 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.isLoading = true;
       try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+
         await axios.post('/api/auth/logout');
+      } catch (error) {
+        console.error('ログアウトAPI呼び出しエラー:', error);
+      } finally {
         this.tenant = null;
         this.isAuthenticated = false;
-        return true;
-      } catch (error) {
-        throw error;
-      } finally {
         this.isLoading = false;
+        
+        localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
       }
     },
 
@@ -61,6 +70,8 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post<AuthResponse>('/api/auth/register', data);
         this.tenant = response.data.tenant;
         this.isAuthenticated = true;
+        localStorage.setItem('token', response.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         return true;
       } catch (error) {
         throw error;

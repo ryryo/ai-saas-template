@@ -65,8 +65,15 @@ const isCurrentRoute = (path: string) => {
 };
 
 const handleLogout = async () => {
-  await auth.logout();
-  router.push({ name: 'login' });
+  try {
+    await auth.logout();
+    // ログアウト後は常にログインページに遷移
+    router.push({ name: 'login' });
+  } catch (error) {
+    console.error('ログアウト中にエラーが発生しました:', error);
+    // エラーが発生しても状態をクリアしてログインページに遷移
+    router.push({ name: 'login' });
+  }
 };
 </script>
 
@@ -89,7 +96,7 @@ const handleLogout = async () => {
         <div class="flex items-center">
           <button
             @click="handleLogout"
-            class="text-gray-500 hover:text-gray-700 px-4 py-2 text-sm"
+            class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-4 py-2 text-sm rounded-md transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-200"
           >
             ログアウト
           </button>
@@ -107,11 +114,11 @@ const handleLogout = async () => {
           <router-link
             :to="item.to"
             :class="[
-              'flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group',
-              { 'bg-gray-100': isCurrentRoute(item.to) },
+              'flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100',
+              { 'bg-gray-100': isCurrentRoute(item.to) }
             ]"
           >
-            <div :class="['w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900', item.icon]" />
+            <span :class="[item.icon, 'w-6 h-6']"></span>
             <span class="ml-3">{{ item.name }}</span>
           </router-link>
         </li>

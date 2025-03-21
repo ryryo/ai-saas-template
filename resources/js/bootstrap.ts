@@ -24,7 +24,7 @@ axios.interceptors.response.use(
     response => response,
     (error: AxiosError) => {
         if (error.response?.status === 401) {
-            // 認証エラーの場合、ローカルストレージをクリア
+            // 認証エラーの場合、ローカルストレージをクリアしてログインページにリダイレクト
             localStorage.removeItem('token');
             delete axios.defaults.headers.common['Authorization'];
         }
